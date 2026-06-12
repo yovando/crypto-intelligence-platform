@@ -87,7 +87,7 @@ def get_coin_data(coin_id: str):
         "change_24h": change_24h_usd
     }
 
-def get_market_snapshot(TRACKED_COINS):
+def get_market_snapshot():
     list_id = [coin["id"] for coin in TRACKED_COINS]
     data = fetch_price_json(list_id)
 
@@ -105,8 +105,15 @@ def get_market_snapshot(TRACKED_COINS):
 
         if not price_usd or not market_cap_usd or change_24h_usd is None:
             return None
+        
+        coin = next(coin
+                for coin in TRACKED_COINS
+                if coin_id == coin["id"]), None
+        
         snapshot.append({
             "id": coin_id,
+            "name": coin[0]["name"],
+            "symbol": coin[0]["symbol"],
             "price_usd": price_usd,
             "market_cap_usd": market_cap_usd,
             "change_24h": change_24h_usd
@@ -129,13 +136,11 @@ def get_top_movers():
             headers=headers,
             timeout=10)
         if not http_response.ok:
-            print('here???')
             return None
         
         data = http_response.json()
 
     except (requests.RequestException, ValueError):
-        print('here')
         return None
     
     valid_coins = [
@@ -148,15 +153,47 @@ def get_top_movers():
         key=lambda coin: coin["price_change_percentage_24h"],
         reverse=True
     )[:5]
-    loosers = sorted(
+    losers = sorted(
         valid_coins,
         key=lambda coin: coin["price_change_percentage_24h"]
     )[:5]
-    print(gainers)
-    print(loosers)
+
+    gainers_list = []
+    for coin_data in gainers:
+        gainers_list.append({
+            "id": coin_data["id"],
+            "name": coin_data["name"],
+            "symbol": coin_data["symbol"],
+            "price_usd": coin_data["current_price"],
+            "change_24h": coin_data["price_change_percentage_24h"]
+        })
+
+    losers_list = []
+    for coin_data in losers:
+        losers_list.append({
+            "id": coin_data["id"],
+            "name": coin_data["name"],
+            "symbol": coin_data["symbol"],
+            "price_usd": coin_data["current_price"],
+            "change_24h": coin_data["price_change_percentage_24h"]
+        })
+
+    return {
+        "gainers": gainers_list,
+        "losers": losers_list
+    }
+    
+
 
 if __name__ == "__main__":
-    # print(get_coin_data("bitcoin"))      # expect full dict
-    # print(get_coin_data("not_acoin"))    # expect None
-    # print(get_coin_data(""))             # expect None
-    get_top_movers()
+    print("--- single coin ---")
+    print(get_coin_data("bitcoin"))
+
+    print("--- market snapshot ---")
+    print(get_market_snapshot())
+
+    print("--- top movers ---")
+    movers = get_top_movers()
+    if movers:
+        print("Gainers:", movers["gainers"][:2])  # first 2 only
+        print("Losers:", movers["losers"][:2])
