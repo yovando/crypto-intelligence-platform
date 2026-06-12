@@ -1,0 +1,43 @@
+{% if error %}
+    <h1>Error</h1>
+    <p>{{ error }}</p>
+{% else %}
+    <h1>Market Snapshot</h1>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>24h Change</th>
+            <th>Market cap</th>
+        </tr>
+        {% for coin in snapshot %}
+        <tr>
+            <th>{{ coin.name }}</th>
+            <th>${{ coin.price_usd }}</th>
+            <th>{{ coin.change_24h }}%</th>
+            <th>{{ coin.market_cap_usd }}</th>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h1>Top Gainers</h1>
+    <ul>
+        {% for coin in gainers %}
+            <li>
+                {{ coin.name }}<br>
+                - ${{ coin.price_usd }}<br>
+                - {{ coin.change_24h }}%
+            </li>
+        {% endfor %}
+    </ul>
+    <h1>Top Losers</h1>
+    <ul>
+        {% for coin in losers %}
+            <li>
+                {{ coin.name }}<br>
+                - ${{ coin.price_usd }}<br>
+                - {{ coin.change_24h }}%
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

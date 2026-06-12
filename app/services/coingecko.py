@@ -106,14 +106,12 @@ def get_market_snapshot():
         if not price_usd or not market_cap_usd or change_24h_usd is None:
             return None
         
-        coin = next(coin
-                for coin in TRACKED_COINS
-                if coin_id == coin["id"]), None
+        coin = next((coin for coin in TRACKED_COINS if coin_id == coin["id"]), None)
         
         snapshot.append({
             "id": coin_id,
-            "name": coin[0]["name"],
-            "symbol": coin[0]["symbol"],
+            "name": coin["name"],
+            "symbol": coin["symbol"],
             "price_usd": price_usd,
             "market_cap_usd": market_cap_usd,
             "change_24h": change_24h_usd
