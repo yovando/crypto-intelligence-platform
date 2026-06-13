@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.requests import Request
-from app.services.coingecko import (get_coin_data, get_market_snapshot, get_top_movers)
+from app.services.coingecko import (get_market_snapshot, get_top_movers)
 
 app = FastAPI()
 
