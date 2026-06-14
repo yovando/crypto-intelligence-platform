@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.requests import Request
 from app.services.coingecko import (get_market_snapshot, get_top_movers)
+from app.services.fear_greed import get_fear_greed
 
 app = FastAPI()
 
@@ -17,6 +18,7 @@ def home(request: Request):
     
     snapshot = get_market_snapshot()
     movers = get_top_movers()
+    fg = get_fear_greed()
     
     if snapshot is None or movers is None:
        return templates.TemplateResponse(
@@ -34,6 +36,7 @@ def home(request: Request):
                 "snapshot": snapshot,
                 "gainers": movers["gainers"],
                 "losers": movers["losers"],
+                "fg": fg,
                 "error": None
             }
         )

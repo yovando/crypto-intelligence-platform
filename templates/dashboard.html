@@ -2,6 +2,15 @@
     <h1>Error</h1>
     <p>{{ error }}</p>
 {% else %}
+    <h1>Fear & Greed</h1>
+    {% if fg %}
+    <p>{{ fg.value }} - {{ fg.classification }}</p>
+    {% for history in fg.history %}
+    <p>{{ history }}</p>
+    {% endfor %}
+    {% else %}
+    <p>Sentiment unavailable</p>
+    {% endif %}
     <h1>Market Snapshot</h1>
     <table border="1">
         <tr>
