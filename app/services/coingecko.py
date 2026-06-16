@@ -180,18 +180,58 @@ def get_top_movers():
         "gainers": gainers_list,
         "losers": losers_list
     }
+
+def get_global_market():
+    headers = {
+        "x-cg-demo-api-key": COINGECKO_API_KEY
+    }
+    try:
+        http_response = requests.get(
+            "https://api.coingecko.com/api/v3/global",
+            headers=headers,
+            timeout=10)
+        
+        if not http_response.ok:
+            return None
+        
+        data = http_response.json()
+        if not data["data"]:
+            return None
+        
+        total_market_cap_usd = data.get("data", None).get("total_market_cap", None).get("usd", None)
+        change_24h = data.get("data", None).get("market_cap_change_percentage_24h_usd", None)
+        if total_market_cap_usd is None or change_24h is None:
+            return None
+        
+        return {
+            "total_market_cap_usd": format_market_cap(total_market_cap_usd),
+            "change_24h": change_24h
+        }
+    except (requests.RequestException, ValueError):
+        return None
+
+def format_market_cap(value):
+    if value >= 1_000_000_000_000:
+        return f"{value / 1_000_000_000_000:.2f}T"
+    elif value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    else:
+        return f"{value:.0f}"
     
-
-
 if __name__ == "__main__":
-    print("--- single coin ---")
-    print(get_coin_data("bitcoin"))
+    # print("--- single coin ---")
+    # print(get_coin_data("bitcoin"))
 
-    print("--- market snapshot ---")
-    print(get_market_snapshot())
+    # print("--- market snapshot ---")
+    # print(get_market_snapshot())
 
-    print("--- top movers ---")
-    movers = get_top_movers()
-    if movers:
-        print("Gainers:", movers["gainers"][:2])  # first 2 only
-        print("Losers:", movers["losers"][:2])
+    # print("--- top movers ---")
+    # movers = get_top_movers()
+    # if movers:
+    #     print("Gainers:", movers["gainers"][:2])  # first 2 only
+    #     print("Losers:", movers["losers"][:2])
+
+    print("--- global market ---")
+    print(get_global_market())

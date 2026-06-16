@@ -5,8 +5,9 @@ from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.requests import Request
-from app.services.coingecko import (get_market_snapshot, get_top_movers)
+from app.services.coingecko import (get_market_snapshot, get_top_movers, get_global_market)
 from app.services.fear_greed import get_fear_greed
+
 
 app = FastAPI()
 
@@ -19,27 +20,19 @@ def home(request: Request):
     snapshot = get_market_snapshot()
     movers = get_top_movers()
     fg = get_fear_greed()
+    global_market = get_global_market()
     
-    if snapshot is None or movers is None:
-       return templates.TemplateResponse(
-            request = request,
-            name = "dashboard.html",
-            context = {
-                "error": "Market data unavailable"
-            }
-        )
-    else:
-        return templates.TemplateResponse(
-            request = request,
-            name = "dashboard.html",
-            context = {
-                "snapshot": snapshot,
-                "gainers": movers["gainers"],
-                "losers": movers["losers"],
-                "fg": fg,
-                "error": None
-            }
-        )
+    return templates.TemplateResponse(
+        request = request,
+        name = "dashboard.html",
+        context = {
+            "snapshot": snapshot,
+            "gainers": movers["gainers"] if movers else None,
+            "losers": movers["losers"] if movers else None,
+            "fg": fg,
+            "global_market": global_market
+        }
+    )
 
 @app.get("/health")
 def health():

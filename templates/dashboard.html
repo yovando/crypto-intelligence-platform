@@ -1,17 +1,23 @@
-{% if error %}
-    <h1>Error</h1>
-    <p>{{ error }}</p>
-{% else %}
-    <h1>Fear & Greed</h1>
-    {% if fg %}
+<h1>Fear & Greed</h1>
+{% if fg %}
     <p>{{ fg.value }} - {{ fg.classification }}</p>
-    {% for history in fg.history %}
-    <p>{{ history }}</p>
-    {% endfor %}
-    {% else %}
+{% for history in fg.history %}
+    <p>- {{ history.date}}: {{ history.value }} - {{ history.classification }}</p>
+{% endfor %}
+{% else %}
     <p>Sentiment unavailable</p>
-    {% endif %}
-    <h1>Market Snapshot</h1>
+{% endif %}
+
+<h1>Total Market Cap</h1>
+{% if global_market %}
+    <p>${{ global_market.total_market_cap_usd }}</p>
+    <p>24h change: {{ global_market.change_24h }}%</p>
+{% else %}
+    <p>Global market data unavailable</p>
+{% endif %}
+
+<h1>Market Snapshot</h1>
+{% if snapshot %}
     <table border="1">
         <tr>
             <th>Name</th>
@@ -21,15 +27,19 @@
         </tr>
         {% for coin in snapshot %}
         <tr>
-            <th>{{ coin.name }}</th>
-            <th>${{ coin.price_usd }}</th>
-            <th>{{ coin.change_24h }}%</th>
-            <th>{{ coin.market_cap_usd }}</th>
+            <td>{{ coin.name }}</td>
+            <td>${{ coin.price_usd }}</td>
+            <td>{{ coin.change_24h }}%</td>
+            <td>{{ coin.market_cap_usd }}</td>
         </tr>
         {% endfor %}
     </table>
+{% else %}
+    <p>Price data unavailable</p>
+{% endif %}
 
-    <h1>Top Gainers</h1>
+<h1>Top Gainers</h1>
+{% if gainers %}
     <ul>
         {% for coin in gainers %}
             <li>
@@ -49,4 +59,6 @@
             </li>
         {% endfor %}
     </ul>
+{% else %}
+    <p>Movers unavailable</p>
 {% endif %}
