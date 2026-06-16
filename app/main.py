@@ -16,24 +16,37 @@ app.mount("/static", StaticFiles(directory=BASE_DIR/"static"))
 
 @app.get("/")
 def home(request: Request):
-    
-    snapshot = get_market_snapshot()
-    movers = get_top_movers()
-    fg = get_fear_greed()
-    global_market = get_global_market()
-    
+    data = fetch_market_data()
     return templates.TemplateResponse(
         request = request,
         name = "dashboard.html",
         context = {
-            "snapshot": snapshot,
-            "gainers": movers["gainers"] if movers else None,
-            "losers": movers["losers"] if movers else None,
-            "fg": fg,
-            "global_market": global_market
+            "snapshot": data["snapshot"],
+            "gainers": data["gainers"] if data["gainers"] else None,
+            "losers": data["losers"] if data["losers"] else None,
+            "fg": data["fg"],
+            "global_market": data["global_market"]
         }
     )
+
+@app.get("/api/market")
+def api_market():
+    return fetch_market_data()
 
 @app.get("/health")
 def health():
     return "OK"
+
+def fetch_market_data():
+    snapshot = get_market_snapshot()
+    movers = get_top_movers()
+    fg = get_fear_greed()
+    global_market = get_global_market()
+
+    return {
+        "snapshot": snapshot,
+        "gainers": movers["gainers"] if movers else None,
+        "losers": movers['losers'] if movers else None,
+        "fg": fg,
+        "global_market": global_market,
+    }

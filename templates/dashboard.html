@@ -1,64 +1,137 @@
-<h1>Fear & Greed</h1>
-{% if fg %}
-    <p>{{ fg.value }} - {{ fg.classification }}</p>
-{% for history in fg.history %}
-    <p>- {{ history.date}}: {{ history.value }} - {{ history.classification }}</p>
-{% endfor %}
-{% else %}
-    <p>Sentiment unavailable</p>
-{% endif %}
+{% extends "base.html" %}
+{% block title %}Dashboard · Crypto Intelligence{% endblock %}
 
-<h1>Total Market Cap</h1>
-{% if global_market %}
-    <p>${{ global_market.total_market_cap_usd }}</p>
-    <p>24h change: {{ global_market.change_24h }}%</p>
-{% else %}
-    <p>Global market data unavailable</p>
-{% endif %}
+{% block content %}
+<div class="dashboard">
+    <header class="page-header">
+        <p class="eyebrow">Morning briefing</p>
+        <h2 class="page-title">Market overview</h2>
+        <p class="page-lead">Prices, sentiment, and movers across the crypto market.</p>
+    </header>
 
-<h1>Market Snapshot</h1>
-{% if snapshot %}
-    <table border="1">
-        <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>24h Change</th>
-            <th>Market cap</th>
-        </tr>
-        {% for coin in snapshot %}
-        <tr>
-            <td>{{ coin.name }}</td>
-            <td>${{ coin.price_usd }}</td>
-            <td>{{ coin.change_24h }}%</td>
-            <td>{{ coin.market_cap_usd }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-{% else %}
-    <p>Price data unavailable</p>
-{% endif %}
+    <div class="stats-grid">
+        <section class="glass-card stat-card">
+            <p class="card-label">Fear &amp; Greed</p>
+            {% if fg %}
+                <div class="fg-display">
+                    <span class="fg-score">{{ fg.value }}</span>
+                    <span class="badge">{{ fg.classification }}</span>
+                </div>
+                <div class="meter" role="presentation">
+                    <div class="meter-fill" style="width: {{ fg.value }}%"></div>
+                </div>
+                {% if fg.history %}
+                <ul class="history-list">
+                    {% for entry in fg.history %}
+                    <li>
+                        <span class="history-date">{{ entry.date }}</span>
+                        <span class="history-value">{{ entry.value }}</span>
+                        <span class="history-label">{{ entry.classification }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            {% else %}
+                <p class="unavailable">Sentiment unavailable</p>
+            {% endif %}
+        </section>
 
-<h1>Top Gainers</h1>
-{% if gainers %}
-    <ul>
-        {% for coin in gainers %}
-            <li>
-                {{ coin.name }}<br>
-                - ${{ coin.price_usd }}<br>
-                - {{ coin.change_24h }}%
-            </li>
-        {% endfor %}
-    </ul>
-    <h1>Top Losers</h1>
-    <ul>
-        {% for coin in losers %}
-            <li>
-                {{ coin.name }}<br>
-                - ${{ coin.price_usd }}<br>
-                - {{ coin.change_24h }}%
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Movers unavailable</p>
-{% endif %}
+        <section class="glass-card stat-card">
+            <p class="card-label">Total market cap</p>
+            {% if global_market %}
+                <p class="hero-stat">${{ global_market.total_market_cap_usd }}</p>
+                <p class="stat-meta {% if global_market.change_24h >= 0 %}positive{% else %}negative{% endif %}">
+                    {% if global_market.change_24h >= 0 %}↑{% else %}↓{% endif %}
+                    {{ global_market.change_24h | round(2) }}% <span class="muted">24h</span>
+                </p>
+            {% else %}
+                <p class="unavailable">Global market data unavailable</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <section class="glass-card card-wide">
+        <div class="card-header">
+            <h3 class="section-title">Market snapshot</h3>
+            <span class="card-hint">Tracked assets</span>
+        </div>
+        {% if snapshot %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Price</th>
+                        <th>24h</th>
+                        <th>Market cap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coin in snapshot %}
+                    <tr>
+                        <td>
+                            <div class="asset-cell">
+                                <span class="asset-symbol">{{ coin.symbol }}</span>
+                                <span class="asset-name">{{ coin.name }}</span>
+                            </div>
+                        </td>
+                        <td class="num">${{ coin.price_usd }}</td>
+                        <td class="num {% if coin.change_24h >= 0 %}positive{% else %}negative{% endif %}">
+                            {{ coin.change_24h | round(2) }}%
+                        </td>
+                        <td class="num muted">{{ coin.market_cap_usd }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="unavailable">Price data unavailable</p>
+        {% endif %}
+    </section>
+
+    <div class="movers-grid">
+        <section class="glass-card">
+            <div class="card-header">
+                <h3 class="section-title">Top gainers</h3>
+            </div>
+            {% if gainers %}
+            <ul class="mover-list">
+                {% for coin in gainers %}
+                <li class="mover-item">
+                    <div class="mover-top">
+                        <span class="mover-name">{{ coin.name }}</span>
+                        <span class="mover-change positive">+{{ coin.change_24h | round(2) }}%</span>
+                    </div>
+                    <span class="mover-price">${{ coin.price_usd }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <p class="unavailable">Movers unavailable</p>
+            {% endif %}
+        </section>
+
+        <section class="glass-card">
+            <div class="card-header">
+                <h3 class="section-title">Top losers</h3>
+            </div>
+            {% if losers %}
+            <ul class="mover-list">
+                {% for coin in losers %}
+                <li class="mover-item">
+                    <div class="mover-top">
+                        <span class="mover-name">{{ coin.name }}</span>
+                        <span class="mover-change negative">{{ coin.change_24h | round(2) }}%</span>
+                    </div>
+                    <span class="mover-price">${{ coin.price_usd }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <p class="unavailable">Movers unavailable</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}
