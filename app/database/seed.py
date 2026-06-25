@@ -1,5 +1,4 @@
 from app.services.coingecko import TRACKED_COINS
-from app.database.queries import execute_write, execute_query
 from app.database.connection import get_connection
 
 def seed_assets():

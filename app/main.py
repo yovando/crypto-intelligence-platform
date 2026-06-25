@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.requests import Request
 from app.services.coingecko import (get_market_snapshot, get_top_movers, get_global_market)
 from app.services.fear_greed import get_fear_greed
+from app.database.queries import save_market_snapshot, get_price_history
 
 
 app = FastAPI()
@@ -37,8 +38,19 @@ def api_market():
 def health():
     return "OK"
 
+@app.get("/api/prices/{symbol}")
+def price_history(symbol: str):
+    return get_price_history(symbol.upper())
+
+
 def fetch_market_data():
     snapshot = get_market_snapshot()
+    if snapshot:
+        try:
+            save_market_snapshot(snapshot)
+        except Exception as e:
+            print(f"failed to save market snapshot: {e}")
+
     movers = get_top_movers()
     fg = get_fear_greed()
     global_market = get_global_market()
