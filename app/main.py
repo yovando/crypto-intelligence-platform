@@ -39,8 +39,8 @@ def health():
     return "OK"
 
 @app.get("/api/prices/{symbol}")
-def price_history(symbol: str):
-    return get_price_history(symbol.upper())
+def api_prices(symbol: str, limit: int = 100):
+    return get_price_history(symbol.upper(), limit)
 
 
 def fetch_market_data():
