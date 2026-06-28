@@ -82,17 +82,21 @@ def get_price_history(symbol, limit=100):
         ]
     }
 
-def save_news_article(title, source, url, published_at, description):
+def save_news_article(title, source, url, published_at, description, image_url):
     if published_at is not None:
         published_at = datetime.fromisoformat(
             published_at.replace("Z", "+00:00")
         )
-        execute_write(
-            """
-            INSERT INTO news_articles (title, source, url, published_at, description)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (url) DO NOTHING
-            """, (title, source, url, published_at, description))
+    execute_write(
+        """
+        INSERT INTO news_articles (title, source, url, published_at, description, image_url)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (url)
+        DO UPDATE
+        SET
+            image_url = EXCLUDED.image_url,
+            description = EXCLUDED.description
+        """, (title, source, url, published_at, description, image_url))
 
 def save_news_articles(articles):
     for article in articles:
@@ -102,15 +106,20 @@ def save_news_articles(articles):
                 article["source"],
                 article["url"],
                 article["published_at"],
-                article["description"])
+                article["description"],
+                article["image_url"])
         except Exception as e:
             print(f"Failed to save article '{article['title']}': {e}")
 
+def get_recent_news(limit=10):
+    return execute_query(
+        """
+        SELECT title, source, url, published_at, description, image_url
+        FROM news_articles
+        ORDER BY published_at DESC NULLS LAST
+        LIMIT %s
+        """, (limit,))
+
 if __name__ == "__main__":
-    print(execute_query("""
-                        SELECT a.symbol, p.price_usd, p.recorded_at
-                        FROM price_history p
-                        JOIN assets a ON a.id = p.asset_id
-                        ORDER BY p.recorded_at DESC
-                        LIMIT 10;
-                        """))
+    print(execute_query("""SELECT COUNT(*) FROM news_articles WHERE image_url IS NOT NULL;"""))
+    # print(get_recent_news())

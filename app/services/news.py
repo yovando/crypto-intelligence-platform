@@ -25,7 +25,10 @@ def get_crypto_headlines():
             timeout=10)
         
         if not http_response.ok:
+            print(http_response.status_code)
+            print(http_response.text)
             return None
+   
         
         data = http_response.json()
 
@@ -36,6 +39,7 @@ def get_crypto_headlines():
             description = article.get("description")
             url = article.get("url")
             published_at = article.get("publishedAt")
+            image_url = article.get("urlToImage")
 
             if title is None or url is None or title == "[Removed]":
                 continue
@@ -44,6 +48,7 @@ def get_crypto_headlines():
                 "title": title,
                 "description": description,
                 "url": url,
+                "image_url": image_url,
                 "published_at": published_at
             })
 
@@ -52,6 +57,6 @@ def get_crypto_headlines():
         return None
 
 # if __name__ == "__main__":
+#     print(NEWS_API_KEY)
 #     headlines = get_crypto_headlines()
-#     if headlines:
-#         save_news_articles(headlines)
+#     print(headlines)

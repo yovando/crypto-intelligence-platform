@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS news_articles (
     description TEXT,
     source TEXT,
     url TEXT UNIQUE,
+    image_url TEXT,
     published_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TiMESTAMP
 
@@ -47,4 +48,3 @@ CREATE TABLE IF NOT EXISTS portfolio (
 
     FOREIGN KEY (asset_id) REFERENCES assets(id)
 );
-

@@ -6,132 +6,264 @@
     <header class="page-header">
         <p class="eyebrow">Morning briefing</p>
         <h2 class="page-title">Market overview</h2>
-        <p class="page-lead">Prices, sentiment, and movers across the crypto market.</p>
+        <p class="page-lead">Prices, sentiment, headlines, and movers across the crypto market.</p>
     </header>
 
-    <div class="stats-grid">
-        <section class="glass-card stat-card">
-            <p class="card-label">Fear &amp; Greed</p>
-            {% if fg %}
-                <div class="fg-display">
-                    <span class="fg-score">{{ fg.value }}</span>
-                    <span class="badge">{{ fg.classification }}</span>
+    <div class="dashboard-shell{% if not news_data %} dashboard-shell--no-news{% endif %}">
+        {% if news_data %}
+        <aside class="news-rail glass-card" aria-label="News headlines">
+            <div class="news-rail-header">
+                <div>
+                    <p class="card-label">News feed</p>
+                    <h3 class="section-title">Headlines</h3>
                 </div>
-                <div class="meter" role="presentation">
-                    <div class="meter-fill" style="width: {{ fg.value }}%"></div>
-                </div>
-                {% if fg.history %}
-                <ul class="history-list">
-                    {% for entry in fg.history %}
-                    <li>
-                        <span class="history-date">{{ entry.date }}</span>
-                        <span class="history-value">{{ entry.value }}</span>
-                        <span class="history-label">{{ entry.classification }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            {% else %}
-                <p class="unavailable">Sentiment unavailable</p>
-            {% endif %}
-        </section>
-
-        <section class="glass-card stat-card">
-            <p class="card-label">Total market cap</p>
-            {% if global_market %}
-                <p class="hero-stat">${{ global_market.total_market_cap_usd }}</p>
-                <p class="stat-meta {% if global_market.change_24h >= 0 %}positive{% else %}negative{% endif %}">
-                    {% if global_market.change_24h >= 0 %}↑{% else %}↓{% endif %}
-                    {{ global_market.change_24h | round(2) }}% <span class="muted">24h</span>
-                </p>
-            {% else %}
-                <p class="unavailable">Global market data unavailable</p>
-            {% endif %}
-        </section>
-    </div>
-
-    <section class="glass-card card-wide">
-        <div class="card-header">
-            <h3 class="section-title">Market snapshot</h3>
-            <span class="card-hint">Tracked assets</span>
-        </div>
-        {% if snapshot %}
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Asset</th>
-                        <th>Price</th>
-                        <th>24h</th>
-                        <th>Market cap</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for coin in snapshot %}
-                    <tr>
-                        <td>
-                            <div class="asset-cell">
-                                <span class="asset-symbol">{{ coin.symbol }}</span>
-                                <span class="asset-name">{{ coin.name }}</span>
+                <span class="card-hint">{{ news_data | length }}</span>
+            </div>
+            <ul class="news-rail-list" role="list">
+                {% for news in news_data %}
+                <li>
+                    <button
+                        type="button"
+                        class="news-rail-item{% if loop.first %} is-active{% endif %}"
+                        data-target="news-panel-{{ loop.index0 }}"
+                        aria-controls="news-panel-{{ loop.index0 }}"
+                        aria-selected="{{ 'true' if loop.first else 'false' }}">
+                        <div class="news-rail-thumb">
+                            {% if news.image_url %}
+                            <img src="{{ news.image_url }}" alt="" width="72" height="72" loading="lazy" referrerpolicy="no-referrer">
+                            {% else %}
+                            <div class="news-thumb-placeholder" aria-hidden="true">
+                                <span>◆</span>
                             </div>
-                        </td>
-                        <td class="num">${{ coin.price_usd }}</td>
-                        <td class="num {% if coin.change_24h >= 0 %}positive{% else %}negative{% endif %}">
-                            {{ coin.change_24h | round(2) }}%
-                        </td>
-                        <td class="num muted">{{ coin.market_cap_usd }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-            <p class="unavailable">Price data unavailable</p>
+                            {% endif %}
+                        </div>
+                        <div class="news-rail-body">
+                            <span class="news-rail-title">{{ news.title }}</span>
+                            <span class="news-rail-meta">
+                                {% if news.source %}<span>{{ news.source }}</span>{% endif %}
+                                {% if news.published_at %}
+                                <time datetime="{{ news.published_at.isoformat() }}">
+                                    {{ news.published_at.strftime('%b %d · %H:%M') }}
+                                </time>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+        </aside>
         {% endif %}
-    </section>
 
-    <div class="movers-grid">
-        <section class="glass-card">
-            <div class="card-header">
-                <h3 class="section-title">Top gainers</h3>
-            </div>
-            {% if gainers %}
-            <ul class="mover-list">
-                {% for coin in gainers %}
-                <li class="mover-item">
-                    <div class="mover-top">
-                        <span class="mover-name">{{ coin.name }}</span>
-                        <span class="mover-change positive">+{{ coin.change_24h | round(2) }}%</span>
+        <div class="dashboard-main">
+            {% if news_data %}
+            <div class="news-feature glass-card card-wide">
+                {% for news in news_data %}
+                <article
+                    class="news-feature-panel"
+                    id="news-panel-{{ loop.index0 }}"
+                    {% if not loop.first %}hidden{% endif %}>
+                    <div class="news-feature-grid">
+                        <div class="news-feature-media">
+                            {% if news.image_url %}
+                            <img src="{{ news.image_url }}" alt="" width="300" height="188" loading="lazy" referrerpolicy="no-referrer">
+                            {% else %}
+                            <div class="news-feature-placeholder" aria-hidden="true">
+                                <span>◆</span>
+                                <p>No image</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="news-feature-content">
+                            <div class="news-feature-meta">
+                                {% if news.source %}
+                                <span class="news-source">{{ news.source }}</span>
+                                {% endif %}
+                                {% if news.published_at %}
+                                <time class="news-time" datetime="{{ news.published_at.isoformat() }}">
+                                    {{ news.published_at.strftime('%b %d, %Y · %H:%M') }}
+                                </time>
+                                {% endif %}
+                            </div>
+                            <h3 class="news-feature-title">
+                                <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+                                    {{ news.title }}
+                                    <span class="news-external" aria-hidden="true">↗</span>
+                                </a>
+                            </h3>
+                            {% if news.description %}
+                            <details class="news-details" open>
+                                <summary class="news-summary">
+                                    <span class="news-summary-icon" aria-hidden="true"></span>
+                                    <span class="news-summary-label">Summary</span>
+                                </summary>
+                                <p class="news-description">{{ news.description }}</p>
+                            </details>
+                            {% endif %}
+                            <a class="news-read-link" href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+                                Read full article
+                            </a>
+                        </div>
                     </div>
-                    <span class="mover-price">${{ coin.price_usd }}</span>
-                </li>
+                </article>
                 {% endfor %}
-            </ul>
-            {% else %}
-                <p class="unavailable">Movers unavailable</p>
+            </div>
             {% endif %}
-        </section>
 
-        <section class="glass-card">
-            <div class="card-header">
-                <h3 class="section-title">Top losers</h3>
+            <div class="stats-grid">
+                <section class="glass-card stat-card">
+                    <p class="card-label">Fear &amp; Greed</p>
+                    {% if fg %}
+                        <div class="fg-display">
+                            <span class="fg-score">{{ fg.value }}</span>
+                            <span class="badge">{{ fg.classification }}</span>
+                        </div>
+                        <div class="meter" role="presentation">
+                            <div class="meter-fill" style="width: {{ fg.value }}%"></div>
+                        </div>
+                        {% if fg.history %}
+                        <ul class="history-list">
+                            {% for entry in fg.history %}
+                            <li>
+                                <span class="history-date">{{ entry.date }}</span>
+                                <span class="history-value">{{ entry.value }}</span>
+                                <span class="history-label">{{ entry.classification }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    {% else %}
+                        <p class="unavailable">Sentiment unavailable</p>
+                    {% endif %}
+                </section>
+
+                <section class="glass-card stat-card">
+                    <p class="card-label">Total market cap</p>
+                    {% if global_market %}
+                        <p class="hero-stat">${{ global_market.total_market_cap_usd }}</p>
+                        <p class="stat-meta {% if global_market.change_24h >= 0 %}positive{% else %}negative{% endif %}">
+                            {% if global_market.change_24h >= 0 %}↑{% else %}↓{% endif %}
+                            {{ global_market.change_24h | round(2) }}% <span class="muted">24h</span>
+                        </p>
+                    {% else %}
+                        <p class="unavailable">Global market data unavailable</p>
+                    {% endif %}
+                </section>
             </div>
-            {% if losers %}
-            <ul class="mover-list">
-                {% for coin in losers %}
-                <li class="mover-item">
-                    <div class="mover-top">
-                        <span class="mover-name">{{ coin.name }}</span>
-                        <span class="mover-change negative">{{ coin.change_24h | round(2) }}%</span>
+
+            <section class="glass-card card-wide">
+                <div class="card-header">
+                    <h3 class="section-title">Market snapshot</h3>
+                    <span class="card-hint">Tracked assets</span>
+                </div>
+                {% if snapshot %}
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Price</th>
+                                <th>24h</th>
+                                <th>Market cap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for coin in snapshot %}
+                            <tr>
+                                <td>
+                                    <div class="asset-cell">
+                                        <span class="asset-symbol">{{ coin.symbol }}</span>
+                                        <span class="asset-name">{{ coin.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="num">${{ coin.price_usd }}</td>
+                                <td class="num {% if coin.change_24h >= 0 %}positive{% else %}negative{% endif %}">
+                                    {{ coin.change_24h | round(2) }}%
+                                </td>
+                                <td class="num muted">{{ coin.market_cap_usd }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="unavailable">Price data unavailable</p>
+                {% endif %}
+            </section>
+
+            <div class="movers-grid">
+                <section class="glass-card">
+                    <div class="card-header">
+                        <h3 class="section-title">Top gainers</h3>
                     </div>
-                    <span class="mover-price">${{ coin.price_usd }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-                <p class="unavailable">Movers unavailable</p>
-            {% endif %}
-        </section>
+                    {% if gainers %}
+                    <ul class="mover-list">
+                        {% for coin in gainers %}
+                        <li class="mover-item">
+                            <div class="mover-top">
+                                <span class="mover-name">{{ coin.name }}</span>
+                                <span class="mover-change positive">+{{ coin.change_24h | round(2) }}%</span>
+                            </div>
+                            <span class="mover-price">${{ coin.price_usd }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                        <p class="unavailable">Movers unavailable</p>
+                    {% endif %}
+                </section>
+
+                <section class="glass-card">
+                    <div class="card-header">
+                        <h3 class="section-title">Top losers</h3>
+                    </div>
+                    {% if losers %}
+                    <ul class="mover-list">
+                        {% for coin in losers %}
+                        <li class="mover-item">
+                            <div class="mover-top">
+                                <span class="mover-name">{{ coin.name }}</span>
+                                <span class="mover-change negative">{{ coin.change_24h | round(2) }}%</span>
+                            </div>
+                            <span class="mover-price">${{ coin.price_usd }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                        <p class="unavailable">Movers unavailable</p>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
     </div>
+
+    {% if not news_data %}
+    <section class="glass-card card-wide news-empty">
+        <p class="unavailable">News unavailable — check your NewsAPI key or reload later.</p>
+    </section>
+    {% endif %}
 </div>
+
+{% if news_data %}
+<script>
+(function () {
+    const items = document.querySelectorAll(".news-rail-item");
+    const panels = document.querySelectorAll(".news-feature-panel");
+
+    items.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            const targetId = btn.getAttribute("data-target");
+            items.forEach(function (b) {
+                b.classList.remove("is-active");
+                b.setAttribute("aria-selected", "false");
+            });
+            panels.forEach(function (p) { p.hidden = true; });
+            btn.classList.add("is-active");
+            btn.setAttribute("aria-selected", "true");
+            document.getElementById(targetId).hidden = false;
+        });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}
