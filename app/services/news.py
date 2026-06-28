@@ -37,7 +37,7 @@ def get_crypto_headlines():
             url = article.get("url")
             published_at = article.get("publishedAt")
 
-            if title is None and url is None or title == "[Removed]":
+            if title is None or url is None or title == "[Removed]":
                 continue
             articles.append({
                 "source": source,
@@ -51,5 +51,7 @@ def get_crypto_headlines():
     except (requests.RequestException, ValueError, KeyError):
         return None
 
-if __name__ == "__main__":
-    print(get_crypto_headlines())
+# if __name__ == "__main__":
+#     headlines = get_crypto_headlines()
+#     if headlines:
+#         save_news_articles(headlines)

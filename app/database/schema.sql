@@ -23,6 +23,7 @@ ON price_history (asset_id, recorded_at DESC);
 CREATE TABLE IF NOT EXISTS news_articles (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
+    description TEXT,
     source TEXT,
     url TEXT UNIQUE,
     published_at TIMESTAMP,

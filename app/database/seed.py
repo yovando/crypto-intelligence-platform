@@ -18,5 +18,6 @@ def seed_assets():
         raise
     finally:
         conn.close()
+
 if __name__ == "__main__":
     seed_assets()
