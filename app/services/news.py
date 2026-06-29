@@ -6,12 +6,22 @@ load_dotenv()
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 def get_crypto_headlines():
+    return fetch_headlines(
+        'bitcoin OR ethereum OR cryptocurrency OR crypto OR altcoin OR "crypto ETF"',
+        "crypto")
+
+def get_macro_headlines():
+    return fetch_headlines(
+        'inflation OR "interest rates" OR "federal reserve" OR CPI OR unemployment OR "nonfarm payrolls"',
+        "macro")
+
+def fetch_headlines(query: str, category: str):
     headers = {
         "X-Api-Key": NEWS_API_KEY 
     }
 
     params = {
-        "q": 'bitcoin OR ethereum OR cryptocurrency OR crypto OR altcoin OR "crypto ETF"',
+        "q": query,
         "language": "en",
         "sortBy": "publishedAt",
         "pageSize": 20
@@ -25,11 +35,8 @@ def get_crypto_headlines():
             timeout=10)
         
         if not http_response.ok:
-            print(http_response.status_code)
-            print(http_response.text)
             return None
-   
-        
+
         data = http_response.json()
 
         articles = []
@@ -49,10 +56,12 @@ def get_crypto_headlines():
                 "description": description,
                 "url": url,
                 "image_url": image_url,
+                "category": category,
                 "published_at": published_at
             })
 
         return articles
+
     except (requests.RequestException, ValueError, KeyError):
         return None
 

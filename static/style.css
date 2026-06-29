@@ -629,6 +629,29 @@ body {
     gap: 0.35rem;
 }
 
+.news-category {
+    align-self: flex-start;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    line-height: 1.2;
+}
+
+.news-category--crypto {
+    color: #64b5ff;
+    background: rgba(10, 132, 255, 0.16);
+    border: 1px solid rgba(10, 132, 255, 0.35);
+}
+
+.news-category--macro {
+    color: #ffb340;
+    background: rgba(255, 159, 10, 0.14);
+    border: 1px solid rgba(255, 159, 10, 0.35);
+}
+
 .news-rail-title {
     display: -webkit-box;
     -webkit-line-clamp: 3;

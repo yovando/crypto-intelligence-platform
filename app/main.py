@@ -7,8 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.requests import Request
 from app.services.coingecko import (get_market_snapshot, get_top_movers, get_global_market)
 from app.services.fear_greed import get_fear_greed
-from app.database.queries import save_market_snapshot, get_price_history, save_news_articles, get_recent_news
-from app.services.news import get_crypto_headlines
+from app.database.queries import save_market_snapshot, get_price_history, save_news_articles, get_balanced_news
+from app.services.news import get_crypto_headlines, get_macro_headlines
 
 
 app = FastAPI()
@@ -70,14 +70,15 @@ def fetch_market_data():
     }
 
 def fetch_news_data():
-    articles = get_crypto_headlines()
-    if articles:
-        try:
-            save_news_articles(articles)
-        except Exception as e:
-            print(f"failed to save news: {e}")
+    for fetch_fn in (get_crypto_headlines, get_macro_headlines):
+        articles = fetch_fn()
+        if articles:
+            try:
+                save_news_articles(articles)
+            except Exception as e:
+                print(f"failed to save news: {e}")
     try:
-        return get_recent_news(limit=15)
+        return get_balanced_news(crypto_limit=8, macro_limit=8)
     except Exception as e:
         print(f"failed to load news: {e}")
         return None

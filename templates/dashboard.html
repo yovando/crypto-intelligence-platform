@@ -38,6 +38,9 @@
                             {% endif %}
                         </div>
                         <div class="news-rail-body">
+                            {% if news.category %}
+                            <span class="news-category news-category--{{ news.category }}">{{ news.category }}</span>
+                            {% endif %}
                             <span class="news-rail-title">{{ news.title }}</span>
                             <span class="news-rail-meta">
                                 {% if news.source %}<span>{{ news.source }}</span>{% endif %}
@@ -76,6 +79,9 @@
                         </div>
                         <div class="news-feature-content">
                             <div class="news-feature-meta">
+                                {% if news.category %}
+                                <span class="news-category news-category--{{ news.category }}">{{ news.category }}</span>
+                                {% endif %}
                                 {% if news.source %}
                                 <span class="news-source">{{ news.source }}</span>
                                 {% endif %}

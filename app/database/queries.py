@@ -82,21 +82,22 @@ def get_price_history(symbol, limit=100):
         ]
     }
 
-def save_news_article(title, source, url, published_at, description, image_url):
+def save_news_article(title, source, url, published_at, description, category, image_url):
     if published_at is not None:
         published_at = datetime.fromisoformat(
             published_at.replace("Z", "+00:00")
         )
     execute_write(
         """
-        INSERT INTO news_articles (title, source, url, published_at, description, image_url)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO news_articles (title, source, url, published_at, description, category, image_url)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (url)
         DO UPDATE
         SET
             image_url = EXCLUDED.image_url,
-            description = EXCLUDED.description
-        """, (title, source, url, published_at, description, image_url))
+            description = EXCLUDED.description,
+            category = EXCLUDED.category
+        """, (title, source, url, published_at, description, category, image_url))
 
 def save_news_articles(articles):
     for article in articles:
@@ -107,6 +108,7 @@ def save_news_articles(articles):
                 article["url"],
                 article["published_at"],
                 article["description"],
+                article["category"],
                 article["image_url"])
         except Exception as e:
             print(f"Failed to save article '{article['title']}': {e}")
@@ -114,12 +116,34 @@ def save_news_articles(articles):
 def get_recent_news(limit=10):
     return execute_query(
         """
-        SELECT title, source, url, published_at, description, image_url
+        SELECT title, source, url, published_at, description, category, image_url
         FROM news_articles
         ORDER BY published_at DESC NULLS LAST
         LIMIT %s
         """, (limit,))
 
+def get_balanced_news(crypto_limit=8, macro_limit=8):
+    """Return a mix of crypto and macro headlines, newest first within each group."""
+    crypto = execute_query(
+        """
+        SELECT title, source, url, published_at, description, category, image_url
+        FROM news_articles
+        WHERE category = 'crypto'
+        ORDER BY published_at DESC NULLS LAST
+        LIMIT %s
+        """, (crypto_limit,))
+    macro = execute_query(
+        """
+        SELECT title, source, url, published_at, description, category, image_url
+        FROM news_articles
+        WHERE category = 'macro'
+        ORDER BY published_at DESC NULLS LAST
+        LIMIT %s
+        """, (macro_limit,))
+    combined = list(crypto) + list(macro)
+    combined.sort(key=lambda row: row["published_at"] or datetime.min, reverse=True)
+    return combined
+
 if __name__ == "__main__":
-    print(execute_query("""SELECT COUNT(*) FROM news_articles WHERE image_url IS NOT NULL;"""))
+    print(execute_query("""SELECT category, COUNT(*) FROM news_articles GROUP BY category;"""))
     # print(get_recent_news())

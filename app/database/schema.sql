@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS news_articles (
     source TEXT,
     url TEXT UNIQUE,
     image_url TEXT,
+    category TEXT,
     published_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TiMESTAMP
 
