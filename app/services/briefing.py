@@ -1,9 +1,10 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from datetime import date
 from app.services.coingecko import get_market_snapshot, get_global_market
 from app.services.fear_greed import get_fear_greed
-from app.database.queries import get_balanced_news
+from app.database.queries import get_balanced_news, save_briefing, get_latest_briefing
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -38,8 +39,8 @@ def collect_briefing_context():
     fg = None
     if fg_raw:
         fg = {
-            "value": fg["value"],
-            "classification": fg["classification"]
+            "value": fg_raw["value"],
+            "classification": fg_raw["classification"]
         }
     top_news = []
     if news:
@@ -58,6 +59,11 @@ def collect_briefing_context():
     }
 
 def generate_morning_brief():
+
+    latest = get_latest_briefing()
+    if latest and latest["created_at"].date() == date.today():
+        return latest
+
     ctx = collect_briefing_context()
     if not ctx.get("snapshot_data") and not ctx.get("fg"):
         return None
@@ -84,7 +90,11 @@ def generate_morning_brief():
             ]
         )
 
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        if content:
+            save_briefing(content)
+        return get_latest_briefing()
+    
     except Exception as e:
         print(e)
         return None
@@ -106,6 +116,13 @@ def build_briefing_prompt(context: dict):
         )
     
     fg = context["fg"]
+    if fg:
+        fg_line = f"""
+            - value: {fg["value"]},
+            - classification: {fg["classification"]},
+        """
+    else:
+        fg_line = "fear and greed unavailable"
 
     return f"""
         Write today's crypto morning briefing.
@@ -117,8 +134,7 @@ def build_briefing_prompt(context: dict):
         {context["global_data"]}
 
         Fear & Greed Index:
-        Value: {fg["value"]}
-        Classification: {fg["classification"]}
+        {fg_line}
 
         Top News:
         {chr(10).join(news_lines)}
@@ -131,6 +147,8 @@ def build_briefing_prompt(context: dict):
         - Use 3-5 short paragraphs.
         - Do not make investment recommendations.
         - Do not invent facts.
+        - Do not invent or assume today's date.
+        - Use the provided date only.
         """
 
 if __name__ == "__main__":

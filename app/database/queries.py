@@ -144,6 +144,22 @@ def get_balanced_news(crypto_limit=8, macro_limit=8):
     combined.sort(key=lambda row: row["published_at"] or datetime.min, reverse=True)
     return combined
 
+def save_briefing(content: str):
+    execute_write(
+        "INSERT INTO briefings (content) VALUES (%s)",
+        (content,)
+    )
+
+def get_latest_briefing():
+    rows = execute_query(
+        """
+        SELECT content, created_at FROM briefings
+        ORDER BY created_at DESC
+        LIMIT 1
+        """
+    )
+    return rows[0] if rows else None
+
 if __name__ == "__main__":
     print(execute_query("""SELECT category, COUNT(*) FROM news_articles GROUP BY category;"""))
     # print(get_recent_news())

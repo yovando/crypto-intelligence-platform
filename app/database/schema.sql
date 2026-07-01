@@ -49,3 +49,9 @@ CREATE TABLE IF NOT EXISTS portfolio (
 
     FOREIGN KEY (asset_id) REFERENCES assets(id)
 );
+
+CREATE TABLE IF NOT EXISTS briefings (
+    id SERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+)

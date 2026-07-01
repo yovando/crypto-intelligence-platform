@@ -9,6 +9,7 @@ from app.services.coingecko import (get_market_snapshot, get_top_movers, get_glo
 from app.services.fear_greed import get_fear_greed
 from app.database.queries import save_market_snapshot, get_price_history, save_news_articles, get_balanced_news
 from app.services.news import get_crypto_headlines, get_macro_headlines
+from app.services.briefing import generate_morning_brief
 
 
 app = FastAPI()
@@ -20,6 +21,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR/"static"))
 def home(request: Request):
     snapshot_data = fetch_market_data()
     news_data = fetch_news_data()
+    briefing = fetch_briefing()
     return templates.TemplateResponse(
         request = request,
         name = "dashboard.html",
@@ -29,7 +31,8 @@ def home(request: Request):
             "losers": snapshot_data["losers"] if snapshot_data["losers"] else None,
             "fg": snapshot_data["fg"],
             "global_market": snapshot_data["global_market"],
-            "news_data": news_data
+            "news_data": news_data,
+            "briefing": briefing
         }
     )
 
@@ -81,4 +84,11 @@ def fetch_news_data():
         return get_balanced_news(crypto_limit=8, macro_limit=8)
     except Exception as e:
         print(f"failed to load news: {e}")
+        return None
+
+def fetch_briefing():
+    try:
+        return generate_morning_brief()
+    except Exception as e:
+        print(f"failed to load briefing: {e}")
         return None

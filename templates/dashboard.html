@@ -59,6 +59,35 @@
         {% endif %}
 
         <div class="dashboard-main">
+            <section class="glass-card briefing-card card-wide" aria-labelledby="briefing-heading">
+                <div class="briefing-card-header">
+                    <div class="briefing-card-title-group">
+                        <div class="briefing-icon" aria-hidden="true">✦</div>
+                        <div>
+                            <p class="card-label">Intelligence</p>
+                            <h3 class="section-title" id="briefing-heading">AI morning brief</h3>
+                        </div>
+                    </div>
+                    {% if briefing %}
+                    <time class="briefing-timestamp" datetime="{{ briefing.created_at.isoformat() }}">
+                        Generated {{ briefing.created_at.strftime('%b %d, %Y · %H:%M') }}
+                    </time>
+                    {% endif %}
+                </div>
+
+                {% if briefing %}
+                <div class="briefing-body">
+                    {% for para in briefing.content.split('\n\n') %}
+                    {% if para.strip() %}
+                    <p>{{ para.strip() }}</p>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="briefing-unavailable">Morning brief unavailable — check your OpenAI key or try again shortly.</p>
+                {% endif %}
+            </section>
+
             {% if news_data %}
             <div class="news-feature glass-card card-wide">
                 {% for news in news_data %}
